@@ -2,6 +2,8 @@
 
 ## WPA Security
 
+__Authors__: Seoyeoung Jo, Tommy Gerardi and Daniel Oliveira Paiva
+
 __Korean/Swiss hybrid teams are highly encouraged__
 
 ### For this first part, you will need to:
@@ -59,6 +61,12 @@ Fork of the original repo. Then, a Pull Request containing :
 
 - The names of the students. You can add this to the ```README.md```
 - ```wpa_key_derivation.py``` script __modified__ for the automatic recovery of the parameters from the capture file. __Modifications must be extensively commented/documented__
+   
    - Screen grab of your script in action
+   
+     ![](/home/daniel/SU19-WLANSec-Lab3-WPA/files/DeepinScreenshot_select-area_20190809074028.png)
 - ```scaircrack.py``` script __extensively commented/documented__ + the wordlist file
+   
    - Screen grab of your script in action
+   
+     ![](/home/daniel/SU19-WLANSec-Lab3-WPA/files/DeepinScreenshot_select-area_20190809073755.png)

@@ -14,6 +14,7 @@ __license__ 	= "GPL"
 __version__ 	= "1.0"
 __email__ 		= "abraham.rubinstein@heig-vd.ch"
 __status__ 		= "Prototype"
+__edited_by__   = "Seoyeoung Jo, Tommy Gerardi and Daniel Oliveira Paiva"
 
 from scapy.all import *
 from binascii import a2b_hex, b2a_hex
@@ -42,7 +43,10 @@ wpa=rdpcap("wpa_handshake.cap")
 passPhrase  = "actuelle" #this is the passphrase of the WPA network
 A           = "Pairwise key expansion" #this string is used in the pseudo-random function and should never be modified
 
+# Recover the packet from the beacon packet
 ssid        = wpa[0].info
+
+# Recover the mac address before the handshake
 APmac       = wpa[0].addr2.replace(":","").decode("hex") #MAC address of the AP
 Clientmac   = wpa[2].addr2.replace(":","").decode("hex") #MAC address of the client
 
@@ -56,6 +60,7 @@ ea = wpa[8][EAPOL]
 
 # This is the MIC contained in the 4th frame of the 4-way handshake. I copied it by hand.
 # When trying to crack the WPA passphrase, we will compare it to our own MIC calculated using passphrases from a dictionary
+#The MIC is located in the middle of the data frame of the packet. We have to extract it at hand
 mic_to_test = wpa[8].load.encode("hex")[-36:-4]
 
 B           = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(ANonce,SNonce) #used in pseudo-random function
